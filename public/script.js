@@ -66,6 +66,19 @@ function generateQRCode(url) {
     return key;
   }
   
+  // Show alert box
+  function showAlert(message) {
+    const alertBox = document.getElementById("alertBox");
+    const alertMessage = document.getElementById("alertMessage");
+    alertMessage.textContent = message;
+    alertBox.classList.remove("hidden");
+  }
+  
+  // Hide alert box
+  document.getElementById("closeAlert")?.addEventListener("click", () => {
+    document.getElementById("alertBox").classList.add("hidden");
+  });
+  
   // Toggle password field enabled state
   document.getElementById("enableE2EE")?.addEventListener("change", (e) => {
     const passwordInput = document.getElementById("password");
@@ -98,15 +111,15 @@ function generateQRCode(url) {
   
     if (enableE2EE) {
       if (!password) {
-        alert("Please enter an encryption password.");
+        showAlert("Please enter an encryption password.");
         return;
       }
       encryptedData = await encryptSecret(secret, password);
-      link = `${window.location.origin}/retrieve.html?code=${encryptedData.code}`; // Fixed: Use encryptedData.code here
+      link = `${window.location.origin}/retrieve.html?code=${encryptedData.code}`;
     } else {
       offlineKey = generateOfflineKey();
       encryptedData = await encryptSecret(secret, offlineKey);
-      link = `${window.location.origin}/retrieve.html?code=${encryptedData.code}&key=${offlineKey}`; // Fixed: Use encryptedData.code here
+      link = `${window.location.origin}/retrieve.html?code=${encryptedData.code}&key=${offlineKey}`;
     }
   
     const response = await fetch("/api/create", {
@@ -136,10 +149,10 @@ function generateQRCode(url) {
   
       document.getElementById("copyBtn").onclick = () => {
         navigator.clipboard.writeText(link);
-        alert("Link copied to clipboard!");
+        showAlert("Link copied to clipboard!");
       };
     } else {
-      alert("Error creating secret: " + data.message);
+      showAlert("Error creating secret: " + data.message);
     }
   });
   
@@ -162,6 +175,30 @@ function generateQRCode(url) {
     }, 1000);
   }
   
+  // Check secret code existence on page load
+  async function checkSecretCode(code) {
+    const statusMessage = document.getElementById("statusMessage");
+    if (!code) {
+      statusMessage.textContent = "Please enter a secret code.";
+      statusMessage.classList.remove("hidden");
+      return;
+    }
+  
+    const response = await fetch(`/api/check?code=${code}`);
+    const data = await response.json();
+  
+    statusMessage.classList.remove("hidden");
+    if (data.success) {
+      statusMessage.textContent = "Ready to retrieve your secret.";
+      statusMessage.classList.remove("text-red-400");
+      statusMessage.classList.add("text-green-400");
+    } else {
+      statusMessage.textContent = data.message;
+      statusMessage.classList.remove("text-green-400");
+      statusMessage.classList.add("text-red-400");
+    }
+  }
+  
   // Handle OTP verification and conditional password prompt
   let retrievedData = null;
   document.getElementById("otpForm")?.addEventListener("submit", async (e) => {
@@ -180,9 +217,11 @@ function generateQRCode(url) {
       if (retrievedData.attemptsLeft > 0) {
         document.getElementById("removeBtn").classList.remove("hidden");
         document.getElementById("secretRemoved").classList.add("hidden");
+        document.getElementById("secretRemovedDesc").classList.add("hidden");
       } else {
         document.getElementById("removeBtn").classList.add("hidden");
         document.getElementById("secretRemoved").classList.remove("hidden");
+        document.getElementById("secretRemovedDesc").classList.remove("hidden");
       }
       if (retrievedData.isE2EE) {
         document.getElementById("passwordSection").classList.remove("hidden");
@@ -199,7 +238,7 @@ function generateQRCode(url) {
       }
     } else {
       document.getElementById("attemptsLeft").textContent = `Attempts remaining: ${retrievedData.attemptsLeft || 0}`;
-      alert("Error verifying OTP: " + retrievedData.message);
+      showAlert("Error verifying OTP: " + retrievedData.message);
     }
   });
   
@@ -207,7 +246,7 @@ function generateQRCode(url) {
   document.getElementById("decryptBtn")?.addEventListener("click", async () => {
     const password = document.getElementById("password").value;
     if (!password) {
-      alert("Please enter the decryption password.");
+      showAlert("Please enter the decryption password.");
       return;
     }
   
@@ -219,12 +258,14 @@ function generateQRCode(url) {
       if (retrievedData.attemptsLeft > 0) {
         document.getElementById("removeBtn").classList.remove("hidden");
         document.getElementById("secretRemoved").classList.add("hidden");
+        document.getElementById("secretRemovedDesc").classList.add("hidden");
       } else {
         document.getElementById("removeBtn").classList.add("hidden");
         document.getElementById("secretRemoved").classList.remove("hidden");
+        document.getElementById("secretRemovedDesc").classList.remove("hidden");
       }
     } catch (error) {
-      alert("Decryption failed: Incorrect password or corrupted data.");
+      showAlert("Decryption failed: Incorrect password or corrupted data.");
     }
   });
   
@@ -236,18 +277,27 @@ function generateQRCode(url) {
     });
     const data = await response.json();
     if (data.success) {
-      alert("Secret removed successfully.");
+      showAlert("Secret removed successfully.");
       document.getElementById("result").classList.add("hidden");
       document.getElementById("otpForm").classList.remove("hidden");
       document.getElementById("secretOutput").value = "";
       document.getElementById("removeBtn").classList.add("hidden");
       document.getElementById("secretRemoved").classList.remove("hidden");
+      document.getElementById("secretRemovedDesc").classList.remove("hidden");
     } else {
-      alert("Error removing secret: " + data.message);
+      showAlert("Error removing secret: " + data.message);
     }
   });
   
-  // Pre-fill code from URL if present
+  // Pre-fill code from URL, make read-only if present, and check existence
   const urlParams = new URLSearchParams(window.location.search);
   const code = urlParams.get("code");
-  if (code) document.getElementById("code").value = code;
+  if (code) {
+    const codeInput = document.getElementById("code");
+    codeInput.value = code;
+    codeInput.readOnly = true;
+    codeInput.classList.add("bg-gray-600", "cursor-not-allowed");
+    checkSecretCode(code);
+  } else {
+    checkSecretCode(""); // Show message if no code is provided
+  }

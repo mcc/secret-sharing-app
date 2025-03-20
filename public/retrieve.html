@@ -1,79 +1,97 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Retrieve Secret</title>
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
-  <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg">
-    <h1 class="text-2xl font-bold mb-6 text-center text-gray-800">Retrieve a Secret</h1>
+<body class="bg-gray-900 flex items-center justify-center min-h-screen p-4 text-gray-100">
+  <div class="bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-lg">
+    <h1 class="text-2xl font-bold mb-6 text-center text-gray-100">Retrieve a Secret</h1>
+    <div id="statusMessage" class="mb-4 text-center text-sm text-gray-400 hidden"></div>
     <form id="otpForm" class="space-y-4">
       <div>
-        <label for="code" class="block text-sm font-medium text-gray-700">Secret Code</label>
+        <label for="code" class="block text-sm font-medium text-gray-300">Secret Code</label>
         <input 
           id="code" 
           type="text" 
-          class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500" 
+          class="w-full p-2 border border-gray-600 rounded bg-gray-700 text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500" 
           placeholder="Enter 6-character code" 
           maxlength="6" 
+          autocomplete="off" 
+          autocapitalize="off" 
+          spellcheck="false" 
           required 
         >
       </div>
       <div>
-        <label for="otp" class="block text-sm font-medium text-gray-700">One-Time Password (OTP)</label>
+        <label for="otp" class="block text-sm font-medium text-gray-300">One-Time Password (OTP)</label>
         <input 
           id="otp" 
           type="text" 
-          class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500" 
+          class="w-full p-2 border border-gray-600 rounded bg-gray-700 text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500" 
           placeholder="Enter 4-digit OTP" 
           maxlength="4" 
+          autocomplete="off" 
+          autocapitalize="off" 
+          spellcheck="false" 
           required 
         >
       </div>
-      <p id="attemptsLeft" class="text-sm text-gray-600"></p>
-      <p id="expiryTimer" class="text-sm text-gray-600"></p>
+      <p id="attemptsLeft" class="text-sm text-gray-400"></p>
+      <p id="expiryTimer" class="text-sm text-gray-400"></p>
       <button 
         type="submit" 
-        class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        class="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
       >
         Verify OTP
       </button>
     </form>
     <div id="passwordSection" class="mt-4 hidden space-y-4">
       <div>
-        <label for="password" class="block text-sm font-medium text-gray-700">Decryption Password</label>
+        <label for="password" class="block text-sm font-medium text-gray-300">Decryption Password</label>
         <input 
           id="password" 
           type="password" 
-          class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500" 
+          class="w-full p-2 border border-gray-600 rounded bg-gray-700 text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500" 
           placeholder="Enter decryption password" 
+          autocomplete="off" 
+          autocapitalize="off" 
+          spellcheck="false" 
           required
         >
       </div>
       <button 
         id="decryptBtn" 
-        class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        class="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
       >
         Decrypt Secret
       </button>
     </div>
     <div id="result" class="mt-4 hidden">
-      <p class="text-green-600 font-semibold">Secret:</p>
+      <p class="text-green-400 font-semibold">Secret:</p>
       <textarea 
         id="secretOutput" 
-        class="w-full p-2 border rounded bg-gray-50 text-gray-800" 
+        class="w-full p-2 border border-gray-600 rounded bg-gray-700 text-gray-100" 
         rows="4" 
         readonly
+        autocomplete="off" 
+        autocapitalize="off" 
+        spellcheck="false"
       ></textarea>
       <button 
         id="removeBtn" 
-        class="mt-2 w-full bg-red-500 text-white p-2 rounded hover:bg-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 hidden"
+        class="mt-2 w-full bg-red-600 text-white p-2 rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 hidden"
       >
         Remove Secret
       </button>
-      <p id="secretRemoved" class="mt-2 text-red-600 font-semibold hidden">Secret Removed</p>
+      <p id="secretRemoved" class="mt-2 text-gray-500 font-semibold hidden">Secret Removed</p>
+      <p id="secretRemovedDesc" class="mt-1 text-sm text-gray-500 hidden">This secret has been removed and can no longer be retrieved.</p>
+    </div>
+    <div id="alertBox" class="hidden fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-600 text-white p-4 rounded shadow-lg z-50">
+      <p id="alertMessage" class="text-sm"></p>
+      <button id="closeAlert" class="mt-2 text-gray-200 underline">Close</button>
     </div>
   </div>
   <script src="/script.js"></script>

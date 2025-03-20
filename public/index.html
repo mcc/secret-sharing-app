@@ -1,30 +1,31 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Secret Sharing App</title>
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
-<body class="bg-gray-100 flex items-center justify-center min-h-screen p-4">
-  <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-lg">
-    <h1 class="text-2xl font-bold mb-6 text-center text-gray-800">Share a Secret</h1>
+<body class="bg-gray-900 flex items-center justify-center min-h-screen p-4 text-gray-100">
+  <div class="bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-lg">
+    <h1 class="text-2xl font-bold mb-6 text-center text-gray-100">Share a Secret</h1>
     <form id="secretForm" class="space-y-4">
       <div class="relative">
-        <label for="secret" class="block text-sm font-medium text-gray-700">Your Secret</label>
+        <label for="secret" class="block text-sm font-medium text-gray-300">Your Secret</label>
         <input 
           id="secret" 
           type="text" 
-          class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10" 
+          class="w-full p-2 border border-gray-600 rounded bg-gray-700 text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 pr-10" 
           placeholder="Enter your secret" 
           autocomplete="off" 
           autocapitalize="off" 
+          spellcheck="false" 
           required
         >
         <button 
           type="button" 
           id="toggleMask" 
-          class="absolute right-2 top-8 text-gray-500 hover:text-gray-700 focus:outline-none"
+          class="absolute right-2 top-8 text-gray-400 hover:text-gray-200 focus:outline-none"
         >
           <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
@@ -37,28 +38,31 @@
           <input 
             id="enableE2EE" 
             type="checkbox" 
-            class="mr-2 h-4 w-4 text-blue-500 focus:ring-blue-500 border-gray-300 rounded"
+            class="mr-2 h-4 w-4 text-blue-500 focus:ring-blue-500 border-gray-600 rounded bg-gray-700"
+            autocomplete="off"
           >
-          <span class="text-sm font-medium text-gray-700">Enable End-to-End Encryption</span>
+          <span class="text-sm font-medium text-gray-300">Enable End-to-End Encryption</span>
         </label>
       </div>
       <div>
-        <label for="password" class="block text-sm font-medium text-gray-700">Encryption Password</label>
+        <label for="password" class="block text-sm font-medium text-gray-300">Encryption Password</label>
         <input 
           id="password" 
           type="password" 
-          class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:cursor-not-allowed" 
+          class="w-full p-2 border border-gray-600 rounded bg-gray-700 text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-600 disabled:cursor-not-allowed" 
           placeholder="Enter encryption password" 
           autocomplete="off" 
           autocapitalize="off" 
+          spellcheck="false" 
           disabled
         >
       </div>
       <div>
-        <label for="expiry" class="block text-sm font-medium text-gray-700">Expiry Time</label>
+        <label for="expiry" class="block text-sm font-medium text-gray-300">Expiry Time</label>
         <select 
           id="expiry" 
-          class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          class="w-full p-2 border border-gray-600 rounded bg-gray-700 text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          autocomplete="off"
         >
           <option value="300">5 Minutes</option>
           <option value="600">10 Minutes</option>
@@ -67,35 +71,42 @@
         </select>
       </div>
       <div>
-        <label for="maxAttempts" class="block text-sm font-medium text-gray-700">Max Retrieval Attempts</label>
+        <label for="maxAttempts" class="block text-sm font-medium text-gray-300">Max Retrieval Attempts</label>
         <input 
           id="maxAttempts" 
           type="number" 
           min="1" 
           max="10" 
           value="1" 
-          class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+          class="w-full p-2 border border-gray-600 rounded bg-gray-700 text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          autocomplete="off" 
+          autocapitalize="off" 
+          spellcheck="false"
         >
       </div>
       <button 
         type="submit" 
-        class="w-full bg-blue-500 text-white p-2 rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+        class="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
       >
         Create Secret
       </button>
     </form>
     <div id="result" class="mt-6 hidden text-center">
-      <p class="text-green-600 font-semibold mb-4">Secret Created!</p>
-      <p class="text-sm text-gray-700 mb-4">Share the link or QR code below, along with the OTP, with the recipient:</p>
+      <p class="text-green-400 font-semibold mb-4">Secret Created!</p>
+      <p class="text-sm text-gray-400 mb-4">Share the link or QR code below, along with the OTP, with the recipient:</p>
       <div class="flex justify-center mb-4">
         <div id="qrCode" class="max-w-full h-auto"></div>
       </div>
       <div class="flex items-center justify-center space-x-2 mb-4">
-        <a id="secretLink" class="text-blue-500 underline truncate" target="_blank"></a>
-        <button id="copyBtn" class="bg-gray-200 p-1 rounded hover:bg-gray-300">Copy</button>
+        <a id="secretLink" class="text-blue-400 underline truncate" target="_blank"></a>
+        <button id="copyBtn" class="bg-gray-600 p-1 rounded hover:bg-gray-500 text-gray-100">Copy</button>
       </div>
-      <p class="text-sm text-gray-600 mb-2">OTP:</p>
-      <span id="otp" class="text-3xl font-mono text-gray-800 block"></span>
+      <p class="text-sm text-gray-400 mb-2">OTP:</p>
+      <span id="otp" class="text-3xl font-mono text-gray-100 block"></span>
+    </div>
+    <div id="alertBox" class="hidden fixed top-4 left-1/2 transform -translate-x-1/2 bg-red-600 text-white p-4 rounded shadow-lg z-50">
+      <p id="alertMessage" class="text-sm"></p>
+      <button id="closeAlert" class="mt-2 text-gray-200 underline">Close</button>
     </div>
   </div>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>

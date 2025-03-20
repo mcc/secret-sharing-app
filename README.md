@@ -1,16 +1,17 @@
 # Secret Sharing App
 
-A secure, zero-trust secret-sharing application built with **Cloudflare Pages** and **Cloudflare KV**. It supports both a user interface and API, featuring optional end-to-end encryption, server-side encryption, auto-expiry, retrieval limits, and OTP verification.
+A secure, zero-trust secret-sharing app built with **Cloudflare Pages** and **KV**. Features optional E2EE, server-side encryption, auto-expiry with timers, OTP verification, and QR code sharing. Includes a dark-themed UI and API for effortless secret management.
 
 ## Features
-- **UI and API**: Create and retrieve secrets via a web interface or programmatically.
+- **UI and API**: Create, retrieve, and remove secrets via a dark-themed web interface or programmatically.
 - **Zero Trust**: Server never sees plaintext secrets; encryption is client-side.
 - **Encryption**: Optional client-side AES-GCM (user password or auto-generated key) + server-side AES-GCM (session key encrypted with master key).
 - **Auto-Expiry**: Options for 5 minutes, 10 minutes, 1 day (default), or 1 week with a countdown timer.
-- **Retrieval Limits**: Configurable max attempts (1-10), with removal option post-retrieval.
+- **Retrieval Limits**: Configurable max attempts (1-10), with removal option and initial code existence check.
 - **Secret Link**: 6-character short code + 4-digit OTP, with optional 4-character key for non-E2EE secrets.
-- **QR Code**: Generated for easy sharing, displayed with clear instructions.
-- **Styling**: Uses Tailwind CSS via CDN.
+- **QR Code**: Generated for easy sharing with clear instructions.
+- **Security**: Autocomplete/autofill disabled for all fields.
+- **Styling**: Dark theme using Tailwind CSS via CDN.
 
 ## Prerequisites
 - A Cloudflare account with Pages and KV enabled.
@@ -71,7 +72,8 @@ npm install
 
 ### 2. Test Features
 - **Create a Secret**: Visit `/index.html`, enter a secret, toggle E2EE, set expiry and attempts, and submit. Share the generated link/QR code and OTP.
-- **Retrieve a Secret**: Use the link or go to `/retrieve.html?code=<short-code>&key=<optional-key>`, input OTP, and (if E2EE) the password. Check timer and removal option.
+- **Retrieve a Secret**: Use the link or go to `/retrieve.html?code=<short-code>&key=<optional-key>`. Page checks code existence on load; input OTP and (if E2EE) password. View timer and removal option.
+- **Remove a Secret**: After retrieval, click "Remove Secret" to delete it from KV.
 
 ### 3. Debugging
 - Check logs in the terminal or add `console.log` in Functions and `script.js`.
@@ -81,7 +83,7 @@ npm install
 ### 1. Modify Expiry Options
 - Edit `public/index.html` to change expiry options:
   ```html
-  <select id="expiry" class="w-full p-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+  <select id="expiry" class="w-full p-2 border border-gray-600 rounded bg-gray-700 text-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500">
     <option value="300">5 Minutes</option>
     <option value="600">10 Minutes</option>
     <option value="86400" selected>1 Day</option>
@@ -91,7 +93,7 @@ npm install
   ```
 
 ### 2. Adjust Styling
-- Modify Tailwind classes in `public/index.html` and `public/retrieve.html` via the CDN script.
+- Modify Tailwind classes in `public/index.html` and `public/retrieve.html` via the CDN script (e.g., toggle dark/light theme by removing `dark` class from `<html>`).
 
 ### 3. Change Short Code or Key Length
 - In `functions/api/create.js`, adjust the short code length:
@@ -111,7 +113,7 @@ npm install
   ```
 
 ### 4. API Customization
-- Add headers or modify responses in `functions/api/create.js`, `functions/api/retrieve.js`, or `functions/api/remove.js`.
+- Modify responses in `functions/api/create.js`, `functions/api/retrieve.js`, `functions/api/remove.js`, or `functions/api/check.js`.
 
 ## Production Use
 
@@ -132,6 +134,15 @@ npm install
   Response:
   ```json
   {"success": true, "code": "abc123", "otp": "4567"}
+  ```
+
+- **Check Secret Existence**:
+  ```bash
+  curl https://<your-pages-domain>/api/check?code=abc123
+  ```
+  Response:
+  ```json
+  {"success": true, "message": "Secret exists"}
   ```
 
 - **Retrieve Secret**:
@@ -155,6 +166,7 @@ npm install
 ### 3. Security Considerations
 - Ensure `MASTER_SERVER_KEY` is kept secret and rotated periodically.
 - Use HTTPS (automatic with Cloudflare).
+- Autocomplete/autofill disabled for all fields to prevent browser caching.
 - Monitor KV usage to avoid exceeding free tier limits (100K reads/day).
 - The 4-character offline key is basic; consider increasing length for non-E2EE secrets.
 
@@ -169,7 +181,8 @@ my-secret-app/
 │   ├── api/
 │   │   ├── create.js      # API to create a secret
 │   │   ├── retrieve.js    # API to retrieve a secret
-│   │   └── remove.js      # API to remove a secret
+│   │   ├── remove.js      # API to remove a secret
+│   │   └── check.js       # API to check secret existence
 ├── public/
 │   ├── index.html         # UI for creating secrets
 │   ├── retrieve.html      # UI for retrieving secrets
