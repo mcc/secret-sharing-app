@@ -1,0 +1,10 @@
+name = "secret-sharing-app"
+compatibility_date = "2023-01-01"
+
+[[kv_namespaces]]
+binding = "SECRETS_KV"
+id = "<your-kv-namespace-id>"
+
+[vars]
+# No need to define MASTER_SERVER_KEY here; it’s a secret
+
